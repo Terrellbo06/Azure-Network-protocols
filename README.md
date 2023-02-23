@@ -22,98 +22,141 @@ In this tutorial, we observe various network traffic to and from Azure Virtual M
 
 <h2>High-Level Steps</h2>
 
-- Create Resources
-- Observe ICMP Traffic
-- Observe SSH Traffic
-- Observe DHCP Traffic
-- Observe DNS Traffic
-- Observe RDP Traffic
+- Step 1: Create Virtual Machines and Download Wireshark
+- Step 2: Observe ICMP Traffic
+- Step 3: Observe SSH Traffic
+- Step 4: Observe DHCP Traffic
+- Step 5: Observe DNS Traffic
+- Step 6: Observe RDP Traffic
 
 <h2>Actions and Observations</h2>
 
+<h3>Step 1: Create Virtual Machines</h3>
 
-Set up your virtual environment
+First step is to create two virtual machines (VMs) in Azure. One VM will be running Windows 10 and the other will be running Linux Ubuntu Server. 
 
-Create a Resource Group:
+<p></p>
 
-![Image](assets/rg.png)
+If you need direction how to create VMs in Azure, you can see my tutorial on it [here](https://github.com/klcarpio/Create-an-Azure-Account-and-Deploy-a-Virtual-Machine).
 
-Create a Windows virtual machine.
+<p></p>
 
-While creating the VM, select the previously created Resource Group and allow it to create a new Virtual Network (Vnet) and Subnet. Make sure to use the password option under the Administrator Account section (not seen in image):
+Once you have created your VMs, log into the Windows VM via Microsoft Remote Desktop. From within the VM, download [Wireshark](https://www.wireshark.org/download.html).
 
-![Image](assets/win.png)
+<p>
+<img src="https://i.imgur.com/RNIQfXU.png" height="80%" width="80%" alt="1."/>
+</p>
 
-Create an Ubuntu virtual machine.
+<p>
+<img src="https://i.imgur.com/rs7U7jF.jpg" height="80%" width="80%" alt="2."/>
+</p>
 
-While creating the VM, select the previously created Resource Group and allow it to create a new Virtual Network (Vnet) and Subnet. Make sure to use the password option under the Administrator Account section (not seen in image):
+<p>
+<img src="https://i.imgur.com/8yQQZhk.png" height="80%" width="80%" alt="3."/>
+</p>
 
-![Image](assets/ub.png)
+<h3>Step 2: Observe ICMP Traffic</h3>
+Next, we'll begin to use Wireshark. Wireshark is a network protocol analyzer and you can use it to observe the capturing of packets from a network connection. Before starting, grab the private Internet Protocol (IP) address of the Linux VM first.
 
-Observe Your Virtual Network within Network Watcher:
+<p>
+<img src="https://i.imgur.com/3pIAgHZ.png" height="80%" width="80%" alt="4."/>
+</p>
 
-![Image](assets/nw.png)
+Internet Control Message Proctol or ICMP is a network protocol that determines if there is communication issues. It is primarily used to report errors. 
 
-Now let's observe some ICMP traffic
+<p></p>
 
-Remote into your Windows 10 Virtual Machine, install Wireshark, open it and filter for ICMP traffic only. If you are using a Mac like me, you'll have to download Microsoft Remote Desktop from the app store:
+Next, open up Wireshark and Windows Powershell. In Wireshark, type in "icmp" in the green bar. In Powershell ping the Linux VM's private IP address (10.0.0.5 in my example). Then ping a public website (Google). Observe the network traffic in both Wireshark and Powershell. Then setup a perpetual ping using "ping -t" + Linux VM's private IP in Powershell. 
 
-![Image](assets/win-l.png)
+<p>
+<img src="https://i.imgur.com/kMrYzBv.png" height="80%" width="80%" alt="5."/>
+</p>
 
-Retrieve the private IP address of the Ubuntu VM and attempt to ping it from within the Windows 10 VM. Observe ping requests and replies within WireShark:
+<p>
+<img src="https://i.imgur.com/TCqeO8Y.png" height="80%" width="80%" alt="6."/>
+</p>
 
-![Image](assets/ubuntu.png)
+<p>
+<img src="https://i.imgur.com/8Xf0HsI.png" height="80%" width="80%" alt="7."/>
+</p>
 
-![Image](assets/ping.png)
+Next, we'll observe what happens when we block the ICMP traffic. Go back to the Linux VM's Azure Portal, then click on Networking. From Networking, click "Add inbound port rule" -> check ICMP -> check Deny, then click "Add". 
 
-Attempt to ping a public website (such as www.google.com) and observe the traffic in WireShark:
+<p></p>
+This area of Azure is known as Network Security Groups (NSGs). It is basically a firewall in Azure as you can set security rules for your resources. 
 
-![Image](assets/google.png)
+<p>
+<img src="https://i.imgur.com/e6iXBCO.png" height="80%" width="80%" alt="8."/>
+</p>
 
-Initiate a perpetual/non-stop ping from your Windows 10 VM to your Ubuntu VM:
+<p>
+<img src="https://i.imgur.com/PrGxlov.png" height="80%" width="80%" alt="9."/>
+</p>
 
-![Image](assets/cont.png)
+<p>
+<img src="https://i.imgur.com/bwpeK06.png" height="80%" width="80%" alt="10."/>
+</p>
 
-Open the Network Security Group your Ubuntu VM is using and disable incoming (inbound) ICMP traffic, while back in the Windows 10 VM, observe the ICMP traffic in WireShark and the command line Ping activity:
+<p>
+<img src="https://i.imgur.com/OauiJnP.png" height="80%" width="80%" alt="11."/>
+</p>
 
-![Image](assets/port.png)
+Once this is done, go back into the Windows VM and observe the changes in Wireshark and Powershell. Since ICMP traffic is being denied, the requests to are timing out and are showing no response.
 
-![Image](assets/timeout.png)
+<p>
+<img src="https://i.imgur.com/67vfgoD.png" height="80%" width="80%" alt="12."/>
+</p>
 
-Re-enable ICMP traffic for the Network Security Group in your Ubuntu VM and back in the Windows 10 VM, observe the ICMP traffic in WireShark and the command line ping activity (should start working again).Finally, stop the ping activity:
+Next, we'll go back to the Azure Portal and set allow ICMP traffic again. You can either delete the rule or set it to allow. Observe the changes in Wireshark and Powershell again. To stop the perpetual ping, just press "Control" + "C". 
 
-![Image](assets/reenable.png)
+<p>
+<img src="https://i.imgur.com/rGYfCyI.png" height="80%" width="80%" alt="13."/>
+</p>
 
-Time to observe SSH traffic
+<p>
+<img src="https://i.imgur.com/DumDUJd.png" height="80%" width="80%" alt="14."/>
+</p>
 
-Back in Wireshark, filter for SSH traffic only and from your Windows 10 VM, “SSH into” your Ubuntu virtual machine (via its private IP address). Type commands (ls, pwd, etc) into the linux SSH connection and observe SSH traffic spam in WireShark.
+<h3>Step 3: Observe SSH Traffic</h3>
+Next, we'll observe SSH traffic. Secure Shell Protocol or SSH is a network protocol which allows a secure connection to another machines Command Line Interface (CLI). 
 
-Exit the SSH connection by typing ‘exit’ and pressing [return]:
+<p> </p>
+Filter ssh traffic in Wireshark. Then type "ssh" + the Linux VM's private IP address. Powershell will prompt you to login, so use the Linux VM's login credentials. Once you are logged in via SSH, you can begin to play around with it by using Linux commands such as "cd", "pwd", etc. To exit SSH just type "exit". 
 
-![Image](assets/ssh.png)
+<p>
+<img src="https://i.imgur.com/2hRFoSS.png" height="80%" width="80%" alt="15."/>
+</p>
 
-And why not observe DHCP Traffic now
+<p>
+<img src="https://i.imgur.com/sa57YlF.png" height="80%" width="80%" alt="16."/>
+</p>
 
-Back in Wireshark, filter for DHCP traffic only. From your Windows 10 VM, attempt to issue your VM a new IP address from the command line (ipconfig /renew)
+<h3>Step 4: Observe DHCP Traffic</h3>
+Next, we'll observe DHCP traffic. Dynamic Host Configuration Protocol or DHCP is the network protocol responsible for automatically assigning IP addresses.
 
-Observe the DHCP traffic appearing in WireShark:
+<p></p>
+Filter DHCP traffic in Wireshark. In Powershell, type the command "ipconfig /renew" and observe the changes. 
 
-![Image](assets/dhcp.png)
+<p>
+<img src="https://i.imgur.com/DI56TjI.png" height="80%" width="80%" alt="17."/>
+</p>
 
-Let's observe DNS traffic next
+<h3>Step 5: Observe DNS Traffic</h3>
+Next, we'll observe DNS traffic. Domain Name System or DNS is the network protocol that transforms Fully Qualified Domain Names (FQDNs) into their assigned IP addresses. Type DNS in Wireshark and the command nslookup. I used Google and Disney in this example. 
 
-Back in Wireshark, filter for DNS traffic only.
+<p></p>
 
-From your Windows 10 VM within a command line, use nslookup to see what google.com and disney.com’s IP addresses are and observe the DNS traffic being shown in WireShark:
+If you want to learn about DNS, please see my lab on it [here](https://github.com/klcarpio/Understanding-DNS).
 
-![Image](assets/ns.png)
+<p>
+<img src="https://i.imgur.com/vnVMyIj.png" height="80%" width="80%" alt="18."/>
+</p>
 
-And finally, we will observe RDP traffic to finish up this tutorial
+<h3>Step 6: Observe RDP Traffic</h3>
+Finally, we'll observe RDP traffic. Remote Desktop Protoctol or RDP is the protocol that allows the remote connection to another computer and complete control of the Graphical User Interface (GUI). Type RDP in Wireshark and observe the traffic. Since it is a VM, you can see there is a lot of RDP traffic. 
 
-Back in Wireshark, filter for RDP traffic only (tcp.port == 3389).
+<p>
+<img src="https://i.imgur.com/7IuT1yZ.png" height="80%" width="80%" alt="19."/>
+</p>
 
-![Image](assets/tcp.png)
-
-
-
-:bulb: Do not forget to clean up your environment in Azure 
+Thank you for checking out this tutorial. It should have helped you gain a better understanding of network protocols and how network traffic works. 
