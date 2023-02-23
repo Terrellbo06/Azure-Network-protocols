@@ -20,7 +20,7 @@ In this tutorial, we observe various network traffic to and from Azure Virtual M
 - Windows 10 (21H2)
 - Ubuntu Server 20.04
 
-> High-Level Steps
+<h2>High-Level Steps</h2>
 
 - Create Resources
 - Observe ICMP Traffic
@@ -29,7 +29,7 @@ In this tutorial, we observe various network traffic to and from Azure Virtual M
 - Observe DNS Traffic
 - Observe RDP Traffic
 
-## Actions and Observations
+<h2>Actions and Observations</h2>
 
 
 Set up your virtual environment
